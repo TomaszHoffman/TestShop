@@ -3,10 +3,12 @@ import { Product } from '../types/Product';
 
 const API_URL = 'http://localhost:3001/api';
 
+console.log('API_URL:', API_URL); 
+
 export const api = {
   // Pobieranie wszystkich produktów
   getProducts: async (): Promise<Product[]> => {
-    const response = await axios.get(`${API_URL}/products`);
+    const response = await axios.get('http://localhost:3001/api/products');
     return response.data;
   },
 

@@ -8,6 +8,8 @@ import CartPage from './pages/CartPage';
 import './App.css';
 
 function App() {
+  console.log('App component rendering');
+  console.log('Imported components:', { Header, HomePage, ProductsPage, ProductDetailPage, CartPage });
   return (
     <Router>
       <div className="App">
