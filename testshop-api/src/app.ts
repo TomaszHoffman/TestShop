@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import productRoutes from './routes/product.routes';
+import authRoutes from './routes/auth.routes';  // Dodaj tę linię
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/products', productRoutes);
+app.use('/api/auth', authRoutes); 
 
 // Health check route
 app.get('/health', (req, res) => {
