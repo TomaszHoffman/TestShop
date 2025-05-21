@@ -20,22 +20,23 @@ This project contains automated tests for an e-commerce web application, built w
 ## Project Structure
 
 
-testshop/
-├── config/
-│   └── config.ts
-├── pages/
-│   ├── HomePage.ts
-│   ├── LoginPage.ts
-│   ├── ProductPage.ts
-│   └── CartPage.ts
-├── tests/
-│   ├── login.test.ts
-│   ├── search.test.ts
-│   └── checkout.test.ts
-├── utils/
-│   ├── reporter.ts
-│   └── helper.ts
-└── package.json
+- **testshop/**
+  - **config/**
+    - config.ts
+  - **pages/**
+    - HomePage.ts
+    - LoginPage.ts
+    - ProductPage.ts
+    - CartPage.ts
+  - **tests/**
+    - login.test.ts
+    - search.test.ts
+    - checkout.test.ts
+  - **utils/**
+    - reporter.ts
+    - helper.ts
+  - package.json
+
 
 ## Setup Instructions
 1. Clone this repository
