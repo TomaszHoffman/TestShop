@@ -1,47 +1,51 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserModel, UserInput } from '../models/user.model';
 
 export class AuthController {
-  static async register(req: Request, res: Response) {
+  
+  static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
+    console.log('REGISTER ENDPOINT CALLED');
+    console.log('Request body:', req.body);
+    console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+    
     try {
       const { username, email, password } = req.body;
-
-      // Validate input
+      console.log('Extracted data:', { username, email, password: '***' });
+      
       if (!username || !email || !password) {
-        return res.status(400).json({ message: 'Please provide all required fields' });
+        console.log('Missing required fields');
+        res.status(400).json({ message: 'Please provide all required fields' });
+        return;
       }
 
-      // Check if user already exists
+      console.log('Checking if user exists...');
       const existingUser = await UserModel.findByUsername(username);
+      console.log('Existing user:', existingUser ? 'FOUND' : 'NOT FOUND');
+      
       if (existingUser) {
-        return res.status(400).json({ message: 'Username already exists' });
+        res.status(400).json({ message: 'Username already exists' });
+        return;
       }
 
       const existingEmail = await UserModel.findByEmail(email);
       if (existingEmail) {
-        return res.status(400).json({ message: 'Email already exists' });
+        res.status(400).json({ message: 'Email already exists' });
+        return;
       }
 
-      // Create user
-      const userData: UserInput = {
-        username,
-        email,
-        password
-      };
-
+      console.log('Creating user...');
+      const userData: UserInput = { username, email, password };
       const user = await UserModel.create(userData);
+      console.log('User created successfully');
 
-      // Generate JWT token
       const token = jwt.sign(
         { id: user.id },
         process.env.JWT_SECRET as string,
         { expiresIn: '24h' }
       );
 
-      // Return user data without password and token
       const { password: _, ...userWithoutPassword } = user;
-      
       res.status(201).json({
         message: 'User registered successfully',
         user: userWithoutPassword,
@@ -53,37 +57,27 @@ export class AuthController {
     }
   }
 
-  static async login(req: Request, res: Response) {
+  static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { username, password } = req.body;
-
-      // Validate input
       if (!username || !password) {
-        return res.status(400).json({ message: 'Please provide username and password' });
+        res.status(400).json({ message: 'Please provide username and password' });
+        return;
       }
 
-      // Find user
       const user = await UserModel.findByUsername(username);
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+      if (!user || !(await UserModel.comparePassword(password, user.password))) {
+        res.status(401).json({ message: 'Invalid credentials' });
+        return;
       }
 
-      // Verify password
-      const isPasswordValid = await UserModel.comparePassword(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-
-      // Generate JWT token
       const token = jwt.sign(
         { id: user.id },
         process.env.JWT_SECRET as string,
         { expiresIn: '24h' }
       );
 
-      // Return user data without password and token
       const { password: _, ...userWithoutPassword } = user;
-      
       res.status(200).json({
         message: 'Login successful',
         user: userWithoutPassword,
@@ -95,21 +89,20 @@ export class AuthController {
     }
   }
 
-  static async getProfile(req: Request, res: Response) {
+  static async getProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      // User is already attached to request from auth middleware
       if (!req.user) {
-        return res.status(401).json({ message: 'Not authenticated' });
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
       }
 
       const user = await UserModel.findById(req.user.id);
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        res.status(404).json({ message: 'User not found' });
+        return;
       }
 
-      // Return user data without password
       const { password, ...userWithoutPassword } = user;
-      
       res.status(200).json(userWithoutPassword);
     } catch (error) {
       console.error('Get profile error:', error);

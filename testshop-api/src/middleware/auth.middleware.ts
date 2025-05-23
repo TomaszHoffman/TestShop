@@ -16,13 +16,14 @@ declare global {
   }
 }
 
-export const auth = async (req: Request, res: Response, next: NextFunction) => {
+export const auth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     // Get token from header
     const token = req.header('Authorization')?.replace('Bearer ', '');
 
     if (!token) {
-      return res.status(401).json({ message: 'No authentication token, access denied' });
+      res.status(401).json({ message: 'No authentication token, access denied' });
+      return; // ✅ Zmieniono z return res.status()
     }
 
     // Verify token
@@ -30,7 +31,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const user = await UserModel.findById(decoded.id);
 
     if (!user) {
-      return res.status(401).json({ message: 'Token is not valid' });
+      res.status(401).json({ message: 'Token is not valid' });
+      return; // ✅ Zmieniono z return res.status()
     }
 
     // Add user to request object
@@ -45,11 +47,12 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
   } catch (error) {
     console.error('Auth middleware error:', error);
     res.status(401).json({ message: 'Token is not valid' });
+    return; // ✅ Dodano return po błędzie
   }
 };
 
 // Middleware for admin-only routes
-export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
+export const adminOnly = (req: Request, res: Response, next: NextFunction): void => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
